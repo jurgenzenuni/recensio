@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="members-wrap">
+        <div class="members-toolbar">
+            <form method="get" action="/members/" class="members-search">
+            <input type="text" name="q" value="{{ q|default:'' }}" placeholder="Search usernames..." autocomplete="off" />
+            <button type="submit">Search</button>
+        </form>
+    </div>
+
+        {% if search_results %}
+        <section class="members-section">
+            <div class="members-grid flat">
+                {% for m in search_results %}
+                   <div class="member-tile" data-username="{{ m.username }}" data-user-id="{{ m.id }}">
+                       <a class="tile-link" href="/{{ m.username }}/" aria-label="{{ m.username }}"></a>
+                       <div class="avatar"><img loading="lazy" src="{% if m.pfp %}data:image/jpeg;base64,{{ m.pfp }}{% else %}/static/images/pfp-basic.jpg{% endif %}" alt="{{ m.username }}"></div>
+                       <div class="uname">@{{ m.username }}</div>
+                       <div class="meta"><span>{{ m.followers|default:0 }} followers</span><span>•</span><span>{{ m.reviews|default:0 }} reviews</span></div>
+                       <div class="art-strip" data-hydrate="recent-art"></div>
+                   </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% elif members_week and members_week|length > 0 %}
+        <section class="members-section">
+            <div class="section-title">Popular This Week</div>
+            <div class="section-divider"></div>
+        <div class="members-grid flat">
+            {% for m in members_week %}
+                   <div class="member-tile" data-username="{{ m.username }}" data-user-id="{{ m.id }}">
+                       <a class="tile-link" href="/{{ m.username }}/" aria-label="{{ m.username }}"></a>
+                       <div class="avatar"><img loading="lazy" src="{% if m.pfp %}data:image/jpeg;base64,{{ m.pfp }}{% else %}/static/images/pfp-basic.jpg{% endif %}" alt="{{ m.username }}"></div>
+                       <div class="uname">@{{ m.username }}</div>
+                       <div class="meta"><span>{{ m.reviews_week|default:0 }} reviews</span><span>•</span><span>{{ m.followers|default:0 }} followers</span></div>
+                       <div class="art-strip" data-hydrate="recent-art"></div>
+                   </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if members_positive and members_positive|length > 0 %}
+        <section class="members-section">
+            <div class="section-title">Positive Members</div>
+            <div class="section-divider"></div>
+        <div class="members-grid flat">
+            {% for m in members_positive %}
+                   <div class="member-tile" data-username="{{ m.username }}" data-user-id="{{ m.id }}">
+                       <a class="tile-link" href="/{{ m.username }}/" aria-label="{{ m.username }}"></a>
+                       <div class="avatar"><img loading="lazy" src="{% if m.pfp %}data:image/jpeg;base64,{{ m.pfp }}{% else %}/static/images/pfp-basic.jpg{% endif %}" alt="{{ m.username }}"></div>
+                       <div class="uname">@{{ m.username }}</div>
+                       <div class="meta"><span>{% if m.avg_score %}avg {{ m.avg_score|floatformat:1 }}{% else %}no scores{% endif %}</span><span>•</span><span>{{ m.reviews|default:0 }} reviews</span></div>
+                       <div class="art-strip" data-hydrate="recent-art"></div>
+                   </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if members_negative and members_negative|length > 0 %}
+        <section class="members-section">
+            <div class="section-title">Negative Members</div>
+            <div class="section-divider"></div>
+        <div class="members-grid flat">
+            {% for m in members_negative %}
+                   <div class="member-tile" data-username="{{ m.username }}" data-user-id="{{ m.id }}">
+                       <a class="tile-link" href="/{{ m.username }}/" aria-label="{{ m.username }}"></a>
+                       <div class="avatar"><img loading="lazy" src="{% if m.pfp %}data:image/jpeg;base64,{{ m.pfp }}{% else %}/static/images/pfp-basic.jpg{% endif %}" alt="{{ m.username }}"></div>
+                       <div class="uname">@{{ m.username }}</div>
+                       <div class="meta"><span>{% if m.avg_score %}avg {{ m.avg_score|floatformat:1 }}{% else %}no scores{% endif %}</span><span>•</span><span>{{ m.reviews|default:0 }} reviews</span></div>
+                       <div class="art-strip" data-hydrate="recent-art"></div>
+                   </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+            {% if not members_week and not members_positive and not members_negative and not search_results %}
+            <p class="no-members">No members found.</p>
+        {% endif %}
+</div>
+
+<style>
+.members-wrap { max-width: 1280px; margin: 0 auto; padding: 1.25rem; }
+.members-toolbar { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1rem; }
+.members-search { display: flex; align-items: center; gap: 0.5rem; }
+.members-search input { background: #121212; border: 1px solid #2a2a2a; color: #eaeaea; padding: 0.5rem 0.75rem; border-radius: 6px; min-width: 260px; }
+.members-search button { background: #222; color: #eaeaea; border: 1px solid #333; padding: 0.5rem 0.8rem; border-radius: 6px; cursor: pointer; }
+
+.members-section { margin-top: 1.5rem; }
+.section-title { color: #a0a0a0; font-weight: 600; margin-bottom: 0.6rem; }
+.section-divider { width: 100%; height: 1px; background: #2a2a2a; margin-bottom: 0.8rem; }
+
+.members-grid.flat { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
+.member-tile { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; padding: 0.25rem; text-decoration: none; color: inherit; border: none; background: transparent; position: relative; }
+.member-tile .tile-link { position: absolute; inset: 0; z-index: 1; }
+.member-tile .art-strip { position: relative; z-index: 2; }
+.member-tile:hover .uname { text-decoration: underline; }
+.member-tile .avatar { width: 120px; height: 120px; border-radius: 50%; overflow: hidden; border: 3px solid rgba(255,255,255,0.08); }
+.member-tile .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.member-tile .uname { color: #fff; font-weight: 700; }
+.member-tile .meta { color: #b0b0b0; display: flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; }
+.member-tile .art-strip { margin-top: 0.5rem; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.member-tile .art-item { display: block; aspect-ratio: 2 / 3; overflow: hidden; border-radius: 6px; background: #222; }
+.member-tile .art-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.member-tile .art-ph { width: 100%; height: 100%; display: grid; place-items: center; color: #777; font-size: 0.75rem; }
+.no-members { color: #a0a0a0; text-align: center; padding: 2rem; }
+
+@media (max-width: 640px) {
+    .members-grid.flat { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .member-tile .avatar { width: 90px; height: 90px; }
+    /* Keep 5 columns on mobile as well to avoid wrapping */
+    .member-tile .art-strip { grid-template-columns: repeat(5, 1fr); gap: 5px; }
+}
+</style>
+<script>
+// Lazy-hydrate recent artwork per member using JSON + click-time redirect
+(() => {
+    const tiles = Array.from(document.querySelectorAll('.member-tile[data-user-id]'));
+    if (!('IntersectionObserver' in window)) {
+        // Fallback: hydrate all immediately
+        tiles.forEach(hydrateTile);
+        return;
+    }
+    const io = new IntersectionObserver((entries, obs) => {
+        for (const entry of entries) {
+            if (entry.isIntersecting) {
+                hydrateTile(entry.target);
+                obs.unobserve(entry.target);
+            }
+        }
+    }, { rootMargin: '200px 0px' });
+    tiles.forEach(t => io.observe(t));
+
+    function hydrateTile(tile) {
+        const userId = tile.getAttribute('data-user-id');
+        const strip = tile.querySelector('.art-strip[data-hydrate="recent-art"]');
+        if (!userId || !strip) return;
+        // Simple guard to avoid double fetch
+        if (strip.dataset.loaded) return;
+        strip.dataset.loaded = '1';
+        fetch(`/members/recent-art/${userId}/`).then(r => r.json()).then(data => {
+            if (!data || !data.success) return;
+            strip.innerHTML = '';
+            data.items.slice(0, 5).forEach(item => {
+                const a = document.createElement('a');
+                a.className = 'art-item';
+                a.href = item.go_url || '#';
+                a.title = item.title || '';
+                if (item.poster_url) {
+                    const img = document.createElement('img');
+                    img.loading = 'lazy';
+                    img.src = item.poster_url;
+                    img.alt = item.title || '';
+                    a.appendChild(img);
+                } else {
+                    const ph = document.createElement('div');
+                    ph.className = 'art-ph';
+                    ph.textContent = 'No Image';
+                    a.appendChild(ph);
+                }
+                strip.appendChild(a);
+            });
+        }).catch(() => {
+            // Silent fail; keep tile lightweight
+        });
+    }
+})();
+</script>
+{% endblock %}

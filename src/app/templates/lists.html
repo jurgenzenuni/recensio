@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="lists-page container">
+    <!-- Search bar -->
+            <form method="get" action="" style="margin-bottom: 1.5rem; display:flex; gap:8px; justify-content:center;">
+            <input type="text" name="q" value="{{ q }}" class="search-input" placeholder="Search lists by name or username" style="max-width: 520px; width: 100%;">
+            <button class="search-btn" type="submit" aria-label="Search">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 2h12v3a6 6 0 0 1-3 5 6 6 0 0 1 3 5v3H6v-3a6 6 0 0 1 3-5 6 6 0 0 1-3-5V2z"/>
+                </svg>
+            </button>
+                {% if q %}
+                <button class="search-btn" type="button" aria-label="Clear search" title="Clear search" onclick="window.location.href=window.location.pathname">&times;</button>
+                {% endif %}
+        </form>
+
+        {% if q %}
+        <!-- Search Results (moved to top) -->
+        <section class="content-section" style="margin-bottom: 2rem;">
+            <h2 style="color: #a0a0a0; margin-bottom: 0.75rem; font-size: 1.5rem; font-weight: 600;">Search Results</h2>
+            <div style="width: 100%; height: 1px; background-color: #404040; margin-bottom: 1.25rem;"></div>
+            <div class="popular-lists-grid">
+                {% for sl in search_results %}
+                <a class="popular-list-card" href="{{ sl.detail_url }}">
+                    <div class="pl-collage">
+                        {% for it in sl.recent_items %}
+                            <div class="pl-tile" style="background-image:url('{{ it.poster_url }}')"></div>
+                        {% empty %}
+                            <div class="pl-empty">No items yet</div>
+                        {% endfor %}
+                    </div>
+                    <div class="pl-meta">
+                        <div class="pl-title" title="{{ sl.name }}">{{ sl.name }}</div>
+                        <div class="pl-user">
+                            {% if sl.pfp %}<img class="pl-avatar" src="data:image/png;base64,{{ sl.pfp }}" alt="pfp" />{% endif %}
+                            <span class="pl-username">@{{ sl.username }}</span>
+                        </div>
+                        <div class="pl-stats">
+                            <span class="stat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"></path></svg> {{ sl.likes_count|default:'0' }}</span>
+                            <span class="stat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> {{ sl.comments_count|default:'0' }}</span>
+                            <span class="stat">🎬 {{ sl.item_counts.movies|default:'0' }}</span>
+                            <span class="stat">📺 {{ sl.item_counts.shows|default:'0' }}</span>
+                        </div>
+                    </div>
+                </a>
+                {% empty %}
+                <p class="no-items">No lists match your search.</p>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    <!-- Your Lists first -->
+    <section class="content-section">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom: 0.75rem;">
+            <h2 style="color: #a0a0a0; margin: 0; font-size: 1.5rem; font-weight: 600;">Your Lists</h2>
+            {% if is_logged_in %}
+            <button id="openCreateListModal" type="button" class="btn btn-primary" aria-label="Create list">
+                + Create List
+            </button>
+            {% endif %}
+        </div>
+        <div style="width: 100%; height: 1px; background-color: #404040; margin-bottom: 1.25rem;"></div>
+        {% if not is_logged_in %}
+            <p class="no-items">Log in to see and manage your lists.</p>
+        {% endif %}
+        {% if lists %}
+                    <div class="popular-lists-grid">
+                        {% for l in lists %}
+                        <a class="popular-list-card" href="/list/{{ username }}/{{ l.name|slugify }}/">
+                            <div class="pl-collage">
+                                {% if l.recent_items %}
+                                    {% for it in l.recent_items %}
+                                        <div class="pl-tile" style="background-image:url('{{ it.poster_url }}')"></div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="pl-empty">No items yet</div>
+                                {% endif %}
+                            </div>
+                    <div class="pl-meta">
+                        <div class="pl-title" title="{{ l.name }}">{{ l.name }}</div>
+                        <div class="pl-user">
+                            <span class="pl-username">@{{ username }}</span>
+                        </div>
+                        <div class="pl-stats">
+                            <span class="stat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"></path></svg> {{ l.likes_count|default:'0' }}</span>
+                            <span class="stat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> {{ l.comments_count|default:'0' }}</span>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="no-items">You haven't created any lists yet.</p>
+        {% endif %}
+    </section>
+
+        <!-- Popular Lists second -->
+    <section class="content-section" style="margin-top: 2rem;">
+        <h2 style="color: #a0a0a0; margin-bottom: 0.75rem; font-size: 1.5rem; font-weight: 600;">Popular Lists</h2>
+        <div style="width: 100%; height: 1px; background-color: #404040; margin-bottom: 1.25rem;"></div>
+        <div class="popular-lists-grid">
+            {% for pl in popular_lists %}
+            <a class="popular-list-card" href="{{ pl.detail_url }}">
+                <div class="pl-collage">
+                    {% for it in pl.recent_items %}
+                        <div class="pl-tile" style="background-image:url('{{ it.poster_url }}')"></div>
+                    {% empty %}
+                        <div class="pl-empty">No items yet</div>
+                    {% endfor %}
+                </div>
+                <div class="pl-meta">
+                    <div class="pl-title" title="{{ pl.name }}">{{ pl.name }}</div>
+                    <div class="pl-user">
+                        {% if pl.pfp %}<img class="pl-avatar" src="data:image/png;base64,{{ pl.pfp }}" alt="pfp" />{% endif %}
+                        <span class="pl-username">@{{ pl.username }}</span>
+                    </div>
+                    <div class="pl-stats">
+                        <span class="stat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"></path></svg> {{ pl.likes_count|default:'0' }}</span>
+                        <span class="stat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> {{ pl.comments_count|default:'0' }}</span>
+                        <span class="stat">🎬 {{ pl.item_counts.movies|default:'0' }}</span>
+                        <span class="stat">📺 {{ pl.item_counts.shows|default:'0' }}</span>
+                    </div>
+                </div>
+            </a>
+            {% empty %}
+            <p class="no-items">No popular lists yet.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const openBtn = document.getElementById('openCreateListModal');
+        const username = "{{ username|default:''|escapejs }}";
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function slugify(text) {
+            return (text || '')
+                .toString()
+                .toLowerCase()
+                .replace(/[^\w\s-]/g, '')
+                .trim()
+                .replace(/[\s_-]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+        }
+
+        if (openBtn) {
+            openBtn.addEventListener('click', () => {
+                const el = document.getElementById('createListModal');
+                const modal = new bootstrap.Modal(el);
+                modal.show();
+            });
+        }
+
+        const createBtn = document.getElementById('createListConfirm');
+        if (createBtn) {
+            createBtn.addEventListener('click', async () => {
+                const nameEl = document.getElementById('createListName');
+                const descEl = document.getElementById('createListDesc');
+                const pubEl = document.getElementById('createListPublic');
+                const name = (nameEl?.value || '').trim();
+                const description = (descEl?.value || '').trim();
+                const is_public = !!pubEl?.checked;
+                if (!name) { alert('Please enter a list name'); return; }
+                createBtn.disabled = true;
+                try {
+                    const res = await fetch('/lists/create/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                        body: JSON.stringify({ name, description, is_public })
+                    });
+                    const data = await res.json();
+                    if (data.success && data.list) {
+                        const slug = slugify(data.list.name);
+                        window.location.href = `/list/${encodeURIComponent(username)}/${slug}/`;
+                    } else {
+                        alert(data.error || 'Failed to create list');
+                    }
+                } catch (e) {
+                    alert('Failed to create list');
+                } finally {
+                    createBtn.disabled = false;
+                }
+            });
+        }
+    });
+</script>
+
+<!-- Create List Modal -->
+<div class="modal fade" id="createListModal" tabindex="-1" aria-labelledby="createListModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createListModalLabel">Create New List</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2">
+                    <label for="createListName" class="form-label">List name</label>
+                    <input type="text" class="form-control" id="createListName" placeholder="My Favorites">
+                </div>
+                <div class="mb-2">
+                    <label for="createListDesc" class="form-label">Description (optional)</label>
+                    <textarea class="form-control" id="createListDesc" rows="2" placeholder="What is this list about?"></textarea>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="createListPublic" checked>
+                    <label class="form-check-label" for="createListPublic">Public</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="createListConfirm">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

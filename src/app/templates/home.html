@@ -1,0 +1,754 @@
+{% extends 'base.html' %}
+
+{% block body_class %}home-page{% endblock %}
+
+{% block content %}
+<div class="hero-wrapper">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-background">
+            <div class="hero-slide active"></div>
+            <div class="hero-slide"></div>
+            <div class="hero-slide"></div>
+        </div>
+        <div class="hero-content">
+            <div class="container">
+                <h1>Welcome to Recensio</h1>
+                <p>Discover and share authentic reviews about everything that matters</p>
+                {% if not request.session.username %}
+                <a href="#" class="btn-hero" data-bs-toggle="modal" data-bs-target="#registerModal">Get Started - It's
+                    Free!</a>
+                {% else %}
+                <a href="{% url 'browse' %}" class="btn-hero">Start Reviewing</a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Recently Reviewed Section -->
+<div class="main-content">
+    <div class="container">
+        <section class="content-section">
+            <h2 style="color: #a0a0a0; margin-bottom: 0.75rem; font-size: 1.5rem; font-weight: 600;">Recently Reviewed
+            </h2>
+            <div style="width: 100%; height: 1px; background-color: #404040; margin-bottom: 1.5rem;"></div>
+            {% if recently_reviewed %}
+            <div class="content-scroll-container">
+                {% for item in recently_reviewed %}
+                <a href="{{ item.go_url }}" class="content-card-link">
+                    <div class="content-card" data-tmdb-id="{{ item.tmdb_id }}" data-media-type="{{ item.media_type }}"
+                        data-title="{{ item.title }}" data-poster-path="{{ item.poster_path|default:'' }}">
+                        {% if item.poster_url %}
+                        <img loading="lazy" src="{{ item.poster_url }}" alt="{{ item.title }}" class="content-poster">
+                        {% else %}
+                        <div class="content-poster-placeholder">No Image</div>
+                        {% endif %}
+                        {% if item.custom_stats %}
+                        <div class="custom-stats">
+                            <span class="stat watched"
+                                data-title="Watched By {{ item.custom_stats.watched_count|default:'0' }}"
+                                title="Watched By {{ item.custom_stats.watched_count|default:'0' }}"><svg
+                                    class="stat-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg> {{ item.custom_stats.watched_count|default:'0' }}</span>
+                            <span class="stat lists"
+                                data-title="Appears in {{ item.custom_stats.list_count|default:'0' }} Lists"
+                                title="Appears in {{ item.custom_stats.list_count|default:'0' }} Lists"><svg
+                                    class="stat-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg> {{ item.custom_stats.list_count|default:'0' }}</span>
+                            {% if item.custom_stats.avg_score > 0 %}
+                            <span class="stat score" data-score="{{ item.custom_stats.avg_score }}"
+                                data-title="Average User Score {% if item.custom_stats.avg_score %}{{ item.custom_stats.avg_score|floatformat:1 }}{% else %}—{% endif %}"
+                                title="Average User Score {% if item.custom_stats.avg_score %}{{ item.custom_stats.avg_score|floatformat:1 }}{% else %}—{% endif %}"><svg
+                                    class="stat-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <polygon
+                                        points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26">
+                                    </polygon>
+                                </svg> {{ item.custom_stats.avg_score|floatformat:1 }}</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        {% if request.session.username %}
+                        <div class="content-actions">
+                            <div class="content-actions-bar">
+                                <button
+                                    class="content-action-btn{% if item.watched_by_me %} active watched-active{% endif %}"
+                                    data-action="watch" title="Mark as watched" aria-label="Watched">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </button>
+                                <button class="content-action-btn" data-action="list" title="Add to list"
+                                    aria-label="Add to list">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                    </svg>
+                                </button>
+                                <button
+                                    class="content-action-btn{% if item.reviewed_by_me %} active review-active{% endif %}"
+                                    data-action="review" title="Review" aria-label="Review">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <polygon
+                                            points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+                                        </polygon>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="color: #a0a0a0; text-align: center; padding: 2rem;">No recently reviewed content yet.</p>
+            {% endif %}
+        </section>
+
+
+        <!-- Feature Cards Section -->
+        <section class="features-section">
+            <h2 style="color: #a0a0a0; margin-bottom: 0.75rem; font-size: 1.5rem; font-weight: 600;">Recensio Lets
+                You...</h2>
+            <div style="width: 100%; height: 1px; background-color: #404040; margin-bottom: 1.5rem;"></div>
+            <div class="features-grid">
+                <div class="feature-card feature-watch">
+                    <div class="feature-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Track What You've Watched</h3>
+                    <p class="feature-description">Keep track of all the movies and shows you've watched. Never forget
+                        what you've seen.</p>
+                </div>
+                <div class="feature-card feature-rate">
+                    <div class="feature-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon
+                                points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26">
+                            </polygon>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Rate & Review Everything</h3>
+                    <p class="feature-description">Share your honest opinions and help others discover great content
+                        through your reviews.</p>
+                </div>
+                <div class="feature-card feature-list">
+                    <div class="feature-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="8" y1="6" x2="21" y2="6"></line>
+                            <line x1="8" y1="12" x2="21" y2="12"></line>
+                            <line x1="8" y1="18" x2="21" y2="18"></line>
+                            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Curate Lists</h3>
+                    <p class="feature-description">Organize your favorites into custom lists. Share your collections
+                        with the community.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Popular Lists (Compact) - moved under the feature cards -->
+        <section class="content-section" style="margin-top: 0.75rem;">
+            <div class="section-header" style="margin-bottom: 0.75rem;">
+                <h2 style="color: #a0a0a0; margin: 0; font-size: 1.5rem; font-weight: 600;">Popular Lists</h2>
+                <div class="scroll-controls">
+                    <button class="scroll-btn" id="pl-left" aria-label="Scroll left">&#x2039;</button>
+                    <button class="scroll-btn" id="pl-right" aria-label="Scroll right">&#x203A;</button>
+                </div>
+            </div>
+            <div style="width: 100%; height: 1px; background-color: #404040; margin-bottom: 0.75rem;"></div>
+            {% if popular_lists_home %}
+            <div class="content-scroll-container" id="popularListsScroll">
+                {% for pl in popular_lists_home %}
+                <a class="popular-list-card compact" href="{{ pl.detail_url }}" style="flex: 0 0 260px;">
+                    <div class="pl-collage compact">
+                        {% for it in pl.recent_items %}
+                        <div class="pl-tile" style="background-image:url('{{ it.poster_url }}')"></div>
+                        {% empty %}
+                        <div class="pl-empty">No items yet</div>
+                        {% endfor %}
+                    </div>
+                    <div class="pl-meta compact">
+                        <div class="pl-title" title="{{ pl.name }}" style="font-size:1rem;">{{ pl.name }}</div>
+                        <div class="pl-user">
+                            {% if pl.pfp %}<img class="pl-avatar" src="data:image/png;base64,{{ pl.pfp }}"
+                                alt="pfp" />{% endif %}
+                            <span class="pl-username">@{{ pl.username }}</span>
+                        </div>
+                        <div class="pl-stats"
+                            title="Engagement: {{ pl.likes_count|default:'0' }} likes • {{ pl.comments_count|default:'0' }} comments">
+                            <span class="stat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path
+                                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z">
+                                    </path>
+                                </svg> {{ pl.likes_count|default:'0' }}</span>
+                            <span class="stat"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                </svg> {{ pl.comments_count|default:'0' }}</span>
+                            <span class="stat">🎬 {{ pl.item_counts.movies|default:'0' }}</span>
+                            <span class="stat">📺 {{ pl.item_counts.shows|default:'0' }}</span>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="no-items">No popular lists yet.</p>
+            {% endif %}
+        </section>
+
+        <!-- Popular Reviews Section -->
+        <section class="content-section popular-reviews-section">
+            <h2 style="color: #a0a0a0; margin-bottom: 0.75rem; font-size: 1.5rem; font-weight: 600;">Popular Reviews
+            </h2>
+            <div style="width: 100%; height: 1px; background-color: #404040; margin-bottom: 1.0rem;"></div>
+            {% if popular_reviews %}
+            <div class="popular-reviews-grid">
+                {% for r in popular_reviews %}
+                <div class="review-card-home">
+                    <div class="rc-layout">
+                        <a class="rc-poster-link" href="{{ r.go_url }}" aria-label="{{ r.title }}">
+                            {% if r.poster_url %}
+                            <div class="rc-poster-box">
+                                <img loading="lazy" class="rc-poster" src="{{ r.poster_url }}" alt="{{ r.title }}">
+                            </div>
+                            {% else %}
+                            <div class="rc-poster-box rc-poster-placeholder">No Image</div>
+                            {% endif %}
+                        </a>
+                        <div class="rc-content">
+                            <div class="rc-header">
+                                <a class="rc-title" href="{{ r.go_url }}" title="{{ r.title }}">{{ r.title }}</a>
+                            </div>
+                            <div class="rc-meta">
+                                {% if r.pfp %}<a href="/{{ r.username }}/"><img class="rc-avatar"
+                                        src="data:image/png;base64,{{ r.pfp }}" alt="{{ r.username }}"></a>{% endif %}
+                                <a class="rc-username" href="/{{ r.username }}/">@{{ r.username }}</a>
+                                <span class="rc-sep">•</span>
+                                <span class="rc-score">Score {{ r.score }}</span>
+                            </div>
+                            <div class="rc-text">{{ r.review_text }}</div>
+                            <div class="rc-footer">
+                                <button class="review-like-btn{% if r.liked_by_me %} liked{% endif %}"
+                                    data-rating-id="{{ r.rating_id }}" {% if not request.session.username %}disabled
+                                    title="Login to like" {% endif %}>
+                                    <svg class="heart" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path
+                                            d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z">
+                                        </path>
+                                    </svg>
+                                    <span class="review-likes-count">{{ r.likes_count|default:'0' }}</span>
+                                </button>
+                                <span class="rc-date">{{ r.updated_at|date:"M j, Y" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="no-items">No popular reviews yet.</p>
+            {% endif %}
+        </section>
+    </div>
+</div>
+
+<footer class="site-footer">
+    <div class="container footer-inner">
+        <div class="footer-left">
+            <span class="footer-brand">Recensio</span>
+            <span class="footer-dot">•</span>
+            <span class="footer-copy">© {% now "Y" %}</span>
+        </div>
+        <div class="footer-right">
+            <a href="/" class="footer-link">Home</a>
+            <a href="{% url 'browse' %}" class="footer-link">Browse</a>
+            <span class="footer-dot">•</span>
+            <a href="#" class="footer-link">About</a>
+            <a href="#" class="footer-link">Contact</a>
+            <span class="footer-dot">•</span>
+            <a href="#" class="footer-link">Privacy</a>
+            <a href="#" class="footer-link">Terms</a>
+            <span class="footer-dot">•</span>
+            <a href="https://x.com" target="_blank" rel="noopener" class="footer-link">X</a>
+            <a href="https://www.instagram.com" target="_blank" rel="noopener" class="footer-link">Instagram</a>
+            <a href="https://github.com" target="_blank" rel="noopener" class="footer-link">GitHub</a>
+        </div>
+    </div>
+    <div class="footer-divider"></div>
+</footer>
+
+<style>
+    .features-section {
+        padding: 2rem 0;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    /* Mobile: stack feature cards 1-per-row */
+    @media (max-width: 640px) {
+        .features-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+    }
+
+    .feature-card {
+        background: #1a1a1a;
+        border: 1px solid #2a2a2a;
+        border-radius: 6px;
+        padding: 1.75rem 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .feature-watch::before {
+        background: #4ade80;
+    }
+
+    .feature-rate::before {
+        background: #fb923c;
+    }
+
+    .feature-list::before {
+        background: #3b82f6;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .feature-watch:hover {
+        border-color: #4ade80;
+        box-shadow: 0 8px 24px rgba(74, 222, 128, 0.3);
+    }
+
+    .feature-rate:hover {
+        border-color: #fb923c;
+        box-shadow: 0 8px 24px rgba(251, 146, 60, 0.3);
+    }
+
+    .feature-list:hover {
+        border-color: #3b82f6;
+        box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+    }
+
+    .feature-card:hover::before {
+        opacity: 1;
+    }
+
+    .feature-icon {
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        color: #666;
+    }
+
+    .feature-title {
+        color: #ffffff;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+    }
+
+    .feature-description {
+        color: #a0a0a0;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+
+    /* Popular Lists compact tweaks (home) */
+    .popular-list-card.compact {
+        border-radius: 10px;
+    }
+
+    .pl-collage.compact {
+        aspect-ratio: 5/2;
+    }
+
+    .pl-meta.compact {
+        padding: 0.6rem 0.8rem 0.8rem;
+    }
+
+    .popular-list-card.compact .pl-title {
+        margin-bottom: 0.2rem;
+    }
+
+    /* Popular Reviews (home) */
+    .popular-reviews-section {
+        margin-top: 2rem;
+    }
+
+    .popular-reviews-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .review-card-home {
+        background: #1a1a1a;
+        border: 1px solid #2a2a2a;
+        border-radius: 8px;
+        padding: 0.9rem 0.9rem 0.8rem;
+    }
+
+    .rc-header {
+        margin-bottom: 0.35rem;
+    }
+
+    .rc-title {
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.05rem;
+        text-decoration: none;
+    }
+
+    .rc-title:hover {
+        text-decoration: underline;
+    }
+
+    .rc-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: #a0a0a0;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .rc-avatar {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid #3a3a3a;
+    }
+
+    .rc-username {
+        color: #c8c8c8;
+    }
+
+    .rc-sep {
+        color: #666;
+    }
+
+    .rc-score {
+        color: #c8c8c8;
+    }
+
+    .rc-text {
+        color: #b5b5b5;
+        font-size: 0.95rem;
+        line-height: 1.45;
+        display: -webkit-box;
+        line-clamp: 5;
+        -webkit-line-clamp: 5;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 0.6rem;
+    }
+
+    .rc-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .review-like-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: #a0a0a0;
+        background: transparent;
+        border: none;
+        padding: 0.2rem 0.3rem;
+        cursor: pointer;
+    }
+
+    .review-like-btn .heart {
+        transition: fill 0.2s ease, color 0.2s ease;
+    }
+
+    .review-like-btn:hover {
+        color: #ff6b81;
+    }
+
+    .review-like-btn.liked {
+        color: #ff4d6d;
+    }
+
+    .review-like-btn.liked .heart {
+        fill: currentColor;
+    }
+
+    .review-like-btn:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+    }
+
+    .rc-date {
+        color: #7a7a7a;
+        font-size: 0.85rem;
+    }
+
+    /* Popular Reviews: poster layout */
+    .rc-layout {
+        display: flex;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+
+    .rc-poster-box {
+        width: 100px;
+        aspect-ratio: 2/3;
+        border-radius: 6px;
+        background: #2a2a2a;
+        overflow: hidden;
+        flex: 0 0 auto;
+    }
+
+    .rc-poster {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .rc-poster-placeholder {
+        color: #777;
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 0.25rem;
+    }
+
+    .rc-content {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    /* Footer */
+    .site-footer {
+        margin-top: 2rem;
+        padding: 1.25rem 0 2rem;
+        color: #a0a0a0;
+    }
+
+    .footer-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .footer-left {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .footer-brand {
+        color: #ffffff;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+    }
+
+    .footer-dot {
+        color: #666;
+    }
+
+    .footer-right {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .footer-link {
+        color: #c8c8c8;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .footer-link:hover {
+        text-decoration: underline;
+    }
+
+    .footer-divider {
+        height: 1px;
+        background: #2a2a2a;
+        margin-top: 1rem;
+    }
+</style>
+{% endblock %}
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Hero slideshow
+        const slides = document.querySelectorAll('.hero-slide');
+        let currentSlide = 0;
+
+        function nextSlide() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+
+        // Change slide every 12 seconds
+        setInterval(nextSlide, 12000);
+
+        // Apply gradient colors to score stats
+        function applyScoreColors() {
+            document.querySelectorAll('.stat.score').forEach(stat => {
+                const score = parseFloat(stat.dataset.score);
+                if (!isNaN(score)) {
+                    let color;
+                    if (score < 25) {
+                        color = `hsl(0, 100%, ${40 + (score / 100) * 20}%)`;
+                    } else if (score < 50) {
+                        color = `hsl(${(score - 25) * 1.2}, 100%, 50%)`;
+                    } else if (score < 75) {
+                        color = `hsl(${30 + (score - 50) * 1.2}, 100%, 50%)`;
+                    } else {
+                        color = `hsl(${60 + (score - 75) * 1.2}, 70%, 50%)`;
+                    }
+                    stat.style.color = color;
+                }
+            });
+        }
+
+        applyScoreColors();
+
+        // Popular lists scroll controls
+        const plScroll = document.getElementById('popularListsScroll');
+        const leftBtn = document.getElementById('pl-left');
+        const rightBtn = document.getElementById('pl-right');
+        function scrollByCards(dir) {
+            if (!plScroll) return;
+            const card = plScroll.querySelector('.popular-list-card');
+            const step = card ? (card.getBoundingClientRect().width + 16) * 2 : 400; // ~2 cards per click
+            plScroll.scrollBy({ left: dir * step, behavior: 'smooth' });
+        }
+        leftBtn?.addEventListener('click', () => scrollByCards(-1));
+        rightBtn?.addEventListener('click', () => scrollByCards(1));
+
+        // Review like toggles (homepage popular reviews)
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function attachHomeReviewLikeHandlers() {
+            document.querySelectorAll('.review-like-btn').forEach(btn => {
+                btn.addEventListener('click', async function (e) {
+                    e.preventDefault();
+                    if (this.disabled) return;
+                    const ratingId = this.dataset.ratingId;
+                    if (!ratingId) return;
+                    const countEl = this.querySelector('.review-likes-count');
+                    const wasLiked = this.classList.contains('liked');
+                    // optimistic UI
+                    this.classList.toggle('liked', !wasLiked);
+                    if (countEl) {
+                        const n = parseInt(countEl.textContent || '0', 10) || 0;
+                        countEl.textContent = (n + (wasLiked ? -1 : 1)).toString();
+                    }
+                    try {
+                        const res = await fetch('/reviews/toggle-like/', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                            body: JSON.stringify({ rating_id: ratingId })
+                        });
+                        const data = await res.json();
+                        if (!data.success) throw new Error(data.error || 'Failed');
+                        // sync with server
+                        if (countEl) countEl.textContent = data.likes_count;
+                        this.classList.toggle('liked', data.liked);
+                    } catch (err) {
+                        // revert optimistic
+                        this.classList.toggle('liked', wasLiked);
+                        if (countEl) {
+                            const n = parseInt(countEl.textContent || '0', 10) || 0;
+                            countEl.textContent = (n + (wasLiked ? 1 : -1)).toString();
+                        }
+                        alert(err.message || 'Failed to like review');
+                    }
+                });
+            });
+        }
+        attachHomeReviewLikeHandlers();
+    });
+</script>
+{% endblock %}

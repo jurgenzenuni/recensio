@@ -1,0 +1,723 @@
+{% extends 'base.html' %}
+
+{% block body_class %}detail-page{% endblock %}
+
+{% block content %}
+<!-- Compact Hero Section -->
+<div class="compact-hero" {% if movie.backdrop_url %}style="background-image: linear-gradient(to right, rgba(10,10,10,0.95) 40%, rgba(10,10,10,0.7)), url('{{ movie.backdrop_url }}');"{% endif %}>
+    <div class="compact-content">
+        <!-- Poster -->
+        <div class="compact-poster">
+            {% if movie.poster_url %}
+            <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="poster-img">
+            {% else %}
+            <div class="poster-placeholder">No Image</div>
+            {% endif %}
+        </div>
+
+        <!-- Info to the right of poster -->
+        <div class="compact-info">
+            <h1 class="compact-title">{{ movie.title }}</h1>
+            <div class="compact-meta">
+                <span class="meta-item">{{ movie.release_date|slice:":4" }}</span>
+                <span class="meta-divider">•</span>
+                <span class="meta-item">{{ movie.runtime }} min</span>
+                {% if movie.genres %}
+                <span class="meta-divider">•</span>
+                {% for genre in movie.genres %}
+                <span class="genre-tag-small">{{ genre.name }}</span>{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+                {% endif %}
+            </div>
+            {% if movie.tagline %}
+            <p class="compact-tagline">{{ movie.tagline }}</p>
+            {% endif %}
+            <p class="compact-overview">{{ movie.overview }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Stats and Buttons Below Poster -->
+<div class="compact-bottom">
+    <div class="compact-left">
+        <!-- Custom Stats -->
+        {% if movie.custom_stats %}
+        <div class="compact-stats">
+            <div class="stat-box-compact">
+                <div class="stat-icon-compact">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </div>
+                <div class="stat-value-compact">{{ movie.custom_stats.watched_count }}</div>
+                <div class="stat-label-compact">Watched</div>
+            </div>
+            <div class="stat-box-compact">
+                <div class="stat-icon-compact">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                </div>
+                <div class="stat-value-compact">{{ movie.custom_stats.list_count }}</div>
+                <div class="stat-label-compact">In Lists</div>
+            </div>
+            {% if movie.custom_stats.avg_score > 0 %}
+            <div class="stat-box-compact">
+                <div class="stat-icon-compact">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                </div>
+                <div class="stat-value-compact" data-score="{{ movie.custom_stats.avg_score }}">{{ movie.custom_stats.avg_score|floatformat:1 }}</div>
+                <div class="stat-label-compact">Avg Score</div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Action Buttons -->
+        {% if is_logged_in %}
+        <div class="compact-actions">
+            <button class="action-btn-compact btn-primary" id="watchedBtn" data-tmdb-id="{{ movie.id }}" data-media-type="movie" data-title="{{ movie.title }}" data-poster-path="{{ movie.poster_path }}">
+                <span>✓</span> {% if has_watched %}Watched{% else %}Mark as Watched{% endif %}
+            </button>
+            <button class="action-btn-compact btn-secondary" id="rateBtn" data-tmdb-id="{{ movie.id }}" data-media-type="movie" data-title="{{ movie.title }}" data-poster-path="{{ movie.poster_path }}">
+                <span>⭐</span> Rate
+            </button>
+            <button class="action-btn-compact btn-secondary" id="addToListBtn"
+                data-tmdb-id="{{ movie.id }}" data-media-type="movie" data-title="{{ movie.title }}"
+                data-poster-path="{{ movie.poster_path }}">
+                <span>+</span> Add to List
+            </button>
+        </div>
+        {% else %}
+        <div class="compact-actions">
+            <button class="action-btn-compact btn-primary" disabled title="Please log in">
+                <span>✓</span> Mark as Watched
+            </button>
+            <button class="action-btn-compact btn-secondary" disabled title="Please log in">
+                <span>⭐</span> Rate
+            </button>
+            <button class="action-btn-compact btn-secondary" disabled title="Please log in">
+                <span>+</span> Add to List
+            </button>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Details Section to the Right -->
+    <div class="compact-details">
+        <h3 class="details-heading">Details</h3>
+        <div class="details-grid">
+            {% if movie.release_date %}
+            <div class="detail-item-compact">
+                <span class="item-label-compact">Release Date</span>
+                <span class="item-value-compact">{{ movie.release_date }}</span>
+            </div>
+            {% endif %}
+            {% if movie.budget %}
+            <div class="detail-item-compact">
+                <span class="item-label-compact">Budget</span>
+                <span class="item-value-compact">${{ movie.budget|floatformat:0 }}</span>
+            </div>
+            {% endif %}
+            {% if movie.revenue %}
+            <div class="detail-item-compact">
+                <span class="item-label-compact">Revenue</span>
+                <span class="item-value-compact">${{ movie.revenue|floatformat:0 }}</span>
+            </div>
+            {% endif %}
+            {% if movie.production_companies %}
+            <div class="detail-item-compact">
+                <span class="item-label-compact">Production</span>
+                <span class="item-value-compact">
+                    {% for company in movie.production_companies %}
+                    {{ company.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Similar (mixed movies/shows) -->
+<div class="similar-section">
+    <h2 class="section-title">Similar</h2>
+    <div class="section-divider"></div>
+    <div class="content-scroll-container" id="similarMovies" data-movie-id="{{ movie.id }}">
+        <!-- hydrated via JS -->
+    </div>
+    <div class="section-spacer"></div>
+ </div>
+
+<!-- Reviews Section -->
+<div class="reviews-section">
+    <h2 class="section-title">Reviews</h2>
+    <div class="section-divider"></div>
+    {% if reviews %}
+    <div class="reviews-list">
+        {% for review in reviews %}
+        <div class="review-card">
+            <div class="review-header">
+                <div class="review-user-info">
+                    {% if review.pfp %}
+                    <img src="data:image/jpeg;base64,{{ review.pfp }}" alt="{{ review.username }}" class="review-avatar">
+                    {% else %}
+                    <img src="/static/images/pfp-basic.jpg" alt="{{ review.username }}" class="review-avatar">
+                    {% endif %}
+                    <div class="review-meta">
+                        <a href="/{{ review.username }}" class="review-username">{{ review.username }}</a>
+                        <span class="review-score"><span class="score-label">Score:</span> <span class="score-value" data-score="{{ review.score }}">{{ review.score }}</span></span>
+                    </div>
+                </div>
+                <div class="review-header-right">
+                    <span class="review-date">{{ review.updated_at|date:"M d, Y" }}</span>
+                    <button class="review-like-btn{% if review.liked_by_me %} liked{% endif %}"
+                            data-rating-id="{{ review.rating_id }}" {% if not is_logged_in %}disabled title="Please log in"{% endif %}>
+                        <svg class="heart" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                        <span class="review-likes-count">{{ review.likes_count }}</span>
+                    </button>
+                </div>
+            </div>
+            <div class="review-text">
+                {{ review.review_text }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="no-reviews">No reviews yet. Be the first to review this movie!</p>
+    {% endif %}
+</div>
+
+<!-- Rating Modal -->
+<div class="modal fade" id="ratingModal" tabindex="-1" aria-labelledby="ratingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ratingModalLabel">Rate this {{ movie.title }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="rating-slider-container">
+                    <label for="scoreSlider" class="form-label">Your Score: <span id="scoreValue">50</span></label>
+                    <input type="range" class="form-range" id="scoreSlider" min="0" max="100" value="50">
+                </div>
+                <div class="mt-3">
+                    <label for="reviewText" class="form-label">Review (Optional)</label>
+                    <textarea class="form-control" id="reviewText" rows="4" placeholder="Write your review here..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitRating">Submit Rating</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add to List Modal -->
+<div class="modal fade" id="listModal" tabindex="-1" aria-labelledby="listModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="listModalLabel">Add to List</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="btn-group w-100 mb-3" role="group">
+                    <button type="button" class="btn btn-outline-secondary active" id="tabPublic">Public</button>
+                    <button type="button" class="btn btn-outline-secondary" id="tabPrivate">Private</button>
+                </div>
+
+                <div id="listContainer">
+                    <div class="mb-2 small text-muted">Your lists:</div>
+                    <div id="listsArea" class="list-group small"></div>
+                </div>
+
+                <hr class="my-3">
+                <div>
+                    <div class="mb-2 small text-muted">Create new list</div>
+                    <div class="mb-2">
+                        <input type="text" class="form-control" id="newListName" placeholder="List name">
+                    </div>
+                    <div class="mb-2">
+                        <textarea class="form-control" id="newListDesc" rows="2" placeholder="Description (optional)"></textarea>
+                    </div>
+                    <div class="d-grid mt-2">
+                        <button class="btn btn-primary" id="createListBtn">Create List</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="confirmAddToList" disabled>Add</button>
+            </div>
+        </div>
+    </div>
+ </div>
+
+<style>
+    #scoreSlider {
+        --slider-color: hsl(60, 100%, 50%);
+    }
+
+    #scoreSlider::-webkit-slider-thumb {
+        background: var(--slider-color);
+        border: 2px solid #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    #scoreSlider::-moz-range-thumb {
+        background: var(--slider-color);
+        border: 2px solid #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    #scoreValue {
+        font-weight: bold;
+        font-size: 1.5rem;
+        transition: color 0.2s ease;
+    }
+
+    .rating-slider-container {
+        padding: 1rem 0;
+    }
+
+    .review-header-right {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .review-like-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: none;
+        border: 0;
+        color: #a0a0a0;
+        cursor: pointer;
+        padding: 2px 4px;
+        border-radius: 6px;
+        transition: color .15s ease;
+    }
+    .review-like-btn .heart {
+        stroke: currentColor;
+        fill: none;
+    }
+    .review-like-btn:hover { color: #ff6b81; }
+    .review-like-btn.liked { color: #ff4d6d; }
+    .review-like-btn.liked .heart { fill: currentColor; }
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Similar movies hydrate
+            (function initSimilarMovies(){
+                const container = document.getElementById('similarMovies');
+                if (!container) return;
+                const movieId = container.getAttribute('data-movie-id');
+                fetch(`/api/similar/movies/${movieId}/`).then(r => r.json()).then(data => {
+                    if (!data || !data.success) return;
+                    const items = data.items || [];
+                    items.forEach(it => {
+                        const a = document.createElement('a');
+                        a.href = it.go_url || '#';
+                        a.className = 'content-card-link';
+                        const card = document.createElement('div');
+                        card.className = 'content-card';
+                        card.setAttribute('data-tmdb-id', it.tmdb_id);
+                        card.setAttribute('data-media-type', 'movie');
+                        const poster = document.createElement('img');
+                        poster.className = 'content-poster';
+                        poster.loading = 'lazy';
+                        poster.alt = it.title || '';
+                        poster.src = it.poster_url || '';
+                        card.appendChild(poster);
+                        a.appendChild(card);
+                        container.appendChild(a);
+                    });
+                }).catch(() => {});
+            })();
+            // Function to calculate gradient color based on score
+            function getScoreColor(score) {
+                if (score < 25) {
+                    return `hsl(0, 100%, ${40 + (score / 100) * 20}%)`;
+                } else if (score < 50) {
+                    return `hsl(${(score - 25) * 1.2}, 100%, 50%)`;
+                } else if (score < 75) {
+                    return `hsl(${30 + (score - 50) * 1.2}, 100%, 50%)`;
+                } else {
+                    return `hsl(${60 + (score - 75) * 1.2}, 70%, 50%)`;
+                }
+            }
+
+            // Apply gradient color to score value
+            function applyScoreColor() {
+                const scoreEl = document.querySelector('.stat-box-compact:nth-child(3) .stat-value-compact[data-score]');
+                if (scoreEl) {
+                    const score = parseFloat(scoreEl.dataset.score);
+                    if (!isNaN(score)) {
+                        scoreEl.style.color = getScoreColor(score);
+                    }
+                }
+            }
+
+            // Apply colors to review scores
+            function applyReviewScoreColors() {
+                document.querySelectorAll('.score-value').forEach(scoreEl => {
+                    const score = parseFloat(scoreEl.dataset.score);
+                    if (!isNaN(score)) {
+                        scoreEl.style.color = getScoreColor(score);
+                    }
+                });
+            }
+
+            applyScoreColor();
+            applyReviewScoreColors();
+            applyReviewScoreColors();
+
+            const watchedBtn = document.getElementById('watchedBtn');
+
+            if (watchedBtn) {
+                watchedBtn.addEventListener('click', async function () {
+                    const tmdbId = this.dataset.tmdbId;
+                    const mediaType = this.dataset.mediaType;
+                    const title = this.dataset.title;
+                    const posterPath = this.dataset.posterPath;
+
+                    this.disabled = true;
+
+                    try {
+                        const response = await fetch('/mark-watched/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCookie('csrftoken')
+                            },
+                            body: JSON.stringify({
+                                tmdb_id: tmdbId,
+                                media_type: mediaType,
+                                title: title,
+                                poster_path: posterPath
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            this.innerHTML = '<span>✓</span> Watched';
+                            this.classList.add('watched');
+
+                            const watchedCountEl = document.querySelector('.stat-box-compact .stat-value-compact');
+                            if (watchedCountEl && data.stats) {
+                                watchedCountEl.textContent = data.stats.watched_count;
+                            }
+
+                            alert('Added to watched!');
+                        } else {
+                            alert('Error: ' + data.error);
+                            this.disabled = false;
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Failed to mark as watched');
+                        this.disabled = false;
+                    }
+                });
+            }
+
+            // Rating Modal
+            const rateBtn = document.getElementById('rateBtn');
+            const ratingModal = new bootstrap.Modal(document.getElementById('ratingModal'));
+            const scoreSlider = document.getElementById('scoreSlider');
+            const scoreValue = document.getElementById('scoreValue');
+            const submitRatingBtn = document.getElementById('submitRating');
+
+            // Update score value and slider color
+            function updateSliderColor(value) {
+                const percentage = value / 100;
+                let color;
+
+                if (value < 25) {
+                    color = `hsl(0, 100%, ${40 + percentage * 20}%)`;
+                } else if (value < 50) {
+                    color = `hsl(${(value - 25) * 1.2}, 100%, 50%)`;
+                } else if (value < 75) {
+                    color = `hsl(${30 + (value - 50) * 1.2}, 100%, 50%)`;
+                } else {
+                    color = `hsl(${60 + (value - 75) * 1.2}, 70%, 50%)`;
+                }
+
+                scoreSlider.style.setProperty('--slider-color', color);
+                scoreValue.textContent = value;
+                scoreValue.style.color = color;
+            }
+
+            if (scoreSlider) {
+                scoreSlider.addEventListener('input', function () {
+                    updateSliderColor(this.value);
+                });
+                updateSliderColor(50);
+            }
+
+            if (rateBtn) {
+                rateBtn.addEventListener('click', function () {
+                    ratingModal.show();
+                });
+            }
+            // Add to List Modal logic
+            const addToListBtn = document.getElementById('addToListBtn');
+            const listModalEl = document.getElementById('listModal');
+            const listModal = new bootstrap.Modal(listModalEl);
+            const tabPublic = document.getElementById('tabPublic');
+            const tabPrivate = document.getElementById('tabPrivate');
+            const listsArea = document.getElementById('listsArea');
+            const confirmAddBtn = document.getElementById('confirmAddToList');
+            const newListName = document.getElementById('newListName');
+            const newListDesc = document.getElementById('newListDesc');
+            const createListBtn = document.getElementById('createListBtn');
+            let currentVisibility = true; // public by default
+            let selectedListId = null;
+
+            function renderLists(lists) {
+                listsArea.innerHTML = '';
+                if (!lists || lists.length === 0) {
+                    listsArea.innerHTML = '<div class="text-muted">No lists yet.</div>';
+                    return;
+                }
+                lists.forEach(lst => {
+                    const a = document.createElement('a');
+                    a.href = '#';
+                    a.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+                    a.textContent = lst.name;
+                    a.dataset.listId = lst.id;
+                    a.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        selectedListId = lst.id;
+                        confirmAddBtn.disabled = false;
+                        // highlight selection
+                        listsArea.querySelectorAll('.list-group-item').forEach(el => el.classList.remove('active'));
+                        a.classList.add('active');
+                    });
+                    listsArea.appendChild(a);
+                });
+            }
+
+            async function loadLists() {
+                listsArea.innerHTML = '<div class="text-muted">Loading…</div>';
+                try {
+                    const res = await fetch('/lists/fetch/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                        body: JSON.stringify({ is_public: currentVisibility })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        renderLists(data.lists);
+                    } else {
+                        listsArea.innerHTML = `<div class="text-danger">${data.error || 'Failed to load lists'}</div>`;
+                    }
+                } catch (e) {
+                    listsArea.innerHTML = '<div class="text-danger">Failed to load lists</div>';
+                }
+            }
+
+            if (addToListBtn) {
+                addToListBtn.addEventListener('click', () => {
+                    selectedListId = null;
+                    confirmAddBtn.disabled = true;
+                    tabPublic.classList.add('active');
+                    tabPrivate.classList.remove('active');
+                    currentVisibility = true;
+                    listModal.show();
+                    loadLists();
+                });
+            }
+
+            tabPublic?.addEventListener('click', () => {
+                currentVisibility = true;
+                tabPublic.classList.add('active');
+                tabPrivate.classList.remove('active');
+                selectedListId = null;
+                confirmAddBtn.disabled = true;
+                loadLists();
+            });
+            tabPrivate?.addEventListener('click', () => {
+                currentVisibility = false;
+                tabPrivate.classList.add('active');
+                tabPublic.classList.remove('active');
+                selectedListId = null;
+                confirmAddBtn.disabled = true;
+                loadLists();
+            });
+
+            createListBtn?.addEventListener('click', async () => {
+                const name = newListName.value.trim();
+                const description = newListDesc.value.trim();
+                const is_public = tabPublic?.classList.contains('active');
+                if (!name) {
+                    alert('Please enter a list name');
+                    return;
+                }
+                try {
+                    const res = await fetch('/lists/create/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                        body: JSON.stringify({ name, description, is_public })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        // If user created a list of currently viewed type, refresh list
+                        if (data.list.is_public === currentVisibility) {
+                            await loadLists();
+                        }
+                        // clear form
+                        newListName.value = '';
+                        newListDesc.value = '';
+                    } else {
+                        alert(data.error || 'Failed to create list');
+                    }
+                } catch (e) {
+                    alert('Failed to create list');
+                }
+            });
+
+            confirmAddBtn?.addEventListener('click', async () => {
+                if (!selectedListId) return;
+                const tmdbId = addToListBtn.dataset.tmdbId;
+                const mediaType = addToListBtn.dataset.mediaType;
+                const title = addToListBtn.dataset.title;
+                const posterPath = addToListBtn.dataset.posterPath;
+                confirmAddBtn.disabled = true;
+                try {
+                    const res = await fetch('/lists/add-item/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                        body: JSON.stringify({ list_id: selectedListId, tmdb_id: tmdbId, media_type: mediaType, title: title, poster_path: posterPath })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        listModal.hide();
+                        alert('Added to list');
+                    } else {
+                        alert(data.error || 'Failed to add to list');
+                    }
+                } catch (e) {
+                    alert('Failed to add to list');
+                } finally {
+                    confirmAddBtn.disabled = false;
+                }
+            });
+
+            if (submitRatingBtn) {
+                submitRatingBtn.addEventListener('click', async function () {
+                    const score = scoreSlider.value;
+                    const reviewText = document.getElementById('reviewText').value;
+                    const tmdbId = rateBtn.dataset.tmdbId;
+                    const mediaType = rateBtn.dataset.mediaType;
+                    const title = rateBtn.dataset.title;
+                    const posterPath = rateBtn.dataset.posterPath;
+
+                    submitRatingBtn.disabled = true;
+
+                    try {
+                        const response = await fetch('/add-rating/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCookie('csrftoken')
+                            },
+                            body: JSON.stringify({
+                                tmdb_id: tmdbId,
+                                media_type: mediaType,
+                                title: title,
+                                score: score,
+                                review_text: reviewText,
+                                poster_path: posterPath
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            ratingModal.hide();
+                            alert('Rating submitted successfully!');
+
+                            if (data.stats && data.stats.avg_score > 0) {
+                                const avgScoreEl = document.querySelector('.stat-box-compact:nth-child(3) .stat-value-compact');
+                                if (avgScoreEl) {
+                                    avgScoreEl.textContent = data.stats.avg_score.toFixed(1);
+                                    avgScoreEl.dataset.score = data.stats.avg_score;
+                                    applyScoreColor();
+                                }
+                            }
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Failed to submit rating');
+                    } finally {
+                        submitRatingBtn.disabled = false;
+                    }
+                });
+            }
+
+            // Review like toggles
+            function attachReviewLikeHandlers() {
+                document.querySelectorAll('.review-like-btn').forEach(btn => {
+                    btn.addEventListener('click', async function (e) {
+                        e.preventDefault();
+                        if (this.disabled) return;
+                        const ratingId = this.dataset.ratingId;
+                        if (!ratingId) return;
+                        const countEl = this.querySelector('.review-likes-count');
+                        const wasLiked = this.classList.contains('liked');
+                        // optimistic UI
+                        this.classList.toggle('liked', !wasLiked);
+                        if (countEl) {
+                            const n = parseInt(countEl.textContent || '0', 10) || 0;
+                            countEl.textContent = (n + (wasLiked ? -1 : 1)).toString();
+                        }
+                        try {
+                            const res = await fetch('/reviews/toggle-like/', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                                body: JSON.stringify({ rating_id: ratingId })
+                            });
+                            const data = await res.json();
+                            if (!data.success) throw new Error(data.error || 'Failed');
+                            // sync with server
+                            if (countEl) countEl.textContent = data.likes_count;
+                            this.classList.toggle('liked', data.liked);
+                        } catch (err) {
+                            // revert optimistic
+                            this.classList.toggle('liked', wasLiked);
+                            if (countEl) {
+                                const n = parseInt(countEl.textContent || '0', 10) || 0;
+                                countEl.textContent = (n + (wasLiked ? 1 : -1)).toString();
+                            }
+                            alert(err.message || 'Failed to like review');
+                        }
+                    });
+                });
+            }
+            attachReviewLikeHandlers();
+
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+        });
+    </script>
+    {% endblock %}

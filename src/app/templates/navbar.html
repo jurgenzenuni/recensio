@@ -1,0 +1,180 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'home' %}">Recensio</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <!-- Primary nav links aligned to the right, before auth buttons -->
+            <ul class="navbar-nav ms-auto me-3">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/browse/' %}active{% endif %}"
+                        href="{% url 'browse' %}">Browse</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/lists/' %}active{% endif %}"
+                        href="{% url 'lists' %}">Lists</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/members/' %}active{% endif %}"
+                        href="{% url 'members' %}">Members</a>
+                </li>
+            </ul>
+            <!-- Auth buttons / user menu at far right -->
+            <div class="navbar-nav">
+                {% if request.session.username %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown"
+                        role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="data:image/jpeg;base64,{{ request.session.pfp }}" class="rounded-circle me-2"
+                            style="width: 30px; height: 30px; object-fit: cover;">
+                        {{ request.session.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" href="{% url 'profile' request.session.username %}">Profile</a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                    </ul>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="btn-nav-login" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="btn-nav-register" href="#" data-bs-toggle="modal"
+                        data-bs-target="#registerModal">Register</a>
+                </li>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Login Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginModalLabel">Welcome Back</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'login' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="login-username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="login-username" name="username" required
+                            placeholder="Enter your username">
+                    </div>
+                    <div class="mb-3">
+                        <label for="login-password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="login-password" name="password" required
+                            placeholder="Enter your password">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Register Modal -->
+<div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="registerModalLabel">Create Your Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'register' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="reg-firstname" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="reg-firstname" name="firstname" required
+                                placeholder="John">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="reg-lastname" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="reg-lastname" name="lastname" required
+                                placeholder="Doe">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reg-username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="reg-username" name="username" required
+                            maxlength="20" placeholder="Choose a username">
+                    </div>
+                    <div class="mb-3">
+                        <label for="reg-email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="reg-email" name="email" required
+                            placeholder="your@email.com">
+                    </div>
+                    <div class="mb-3">
+                        <label for="reg-password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="reg-password" name="password" required
+                            pattern="^[A-Z].{7,}$"
+                            title="Password must be at least 8 characters long and start with a capital letter"
+                            placeholder="Create a strong password">
+                        <div class="form-text">Must be 8+ characters, starting with a capital letter</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 9999; margin-top: 60px; min-width: 350px;">
+    {% for message in messages %}
+    {% if message.tags == 'success' %}
+    {% with 'success' as alert_type %}
+    <div class="alert alert-{{ alert_type }} alert-dismissible fade show shadow-lg" role="alert">
+        <strong>Success!</strong>
+        <br>{{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endwith %}
+    {% elif message.tags == 'error' %}
+    {% with 'danger' as alert_type %}
+    <div class="alert alert-{{ alert_type }} alert-dismissible fade show shadow-lg" role="alert">
+        <strong>Error!</strong>
+        <br>{{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endwith %}
+    {% else %}
+    {% with 'info' as alert_type %}
+    <div class="alert alert-{{ alert_type }} alert-dismissible fade show shadow-lg" role="alert">
+        <strong>Notice</strong>
+        <br>{{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endwith %}
+    {% endif %}
+    {% endfor %}
+</div>
+<script>
+    // Auto-dismiss alerts after 5 seconds
+    setTimeout(function () {
+        var alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function (alert) {
+            var bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        });
+    }, 5000);
+</script>
+{% endif %}

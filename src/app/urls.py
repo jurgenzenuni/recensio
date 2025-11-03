@@ -1,0 +1,35 @@
+from django.contrib import admin
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', views.home, name='home'),
+    path('browse/', views.browse, name='browse'),
+    path('lists/', views.lists, name='lists'),
+    path('members/', views.members, name='members'),
+    path('login/', views.login, name='login'),
+    path('register/', views.register, name='register'),
+    path('logout/', views.logout, name='logout'),
+    path('profile/update-avatar/', views.update_avatar, name='update_avatar'),
+    path('profile/update-settings/', views.update_profile_settings, name='update_profile_settings'),
+    path('mark-watched/', views.mark_watched, name='mark_watched'),
+    path('add-rating/', views.add_rating_view, name='add_rating'),
+    path('lists/fetch/', views.fetch_user_lists, name='fetch_user_lists'),
+    path('lists/create/', views.create_list_view, name='create_list'),
+    path('lists/add-item/', views.add_to_list_view, name='add_to_list'),
+    path('list/<str:username>/<str:listname>/', views.list_detail, name='list_detail'),
+    path('profile/toggle-follow/', views.toggle_follow, name='toggle_follow'),
+    path('lists/toggle-like/', views.toggle_like, name='toggle_like'),
+    path('lists/add-comment/', views.add_list_comment_view, name='add_list_comment'),
+    path('lists/delete-comment/', views.delete_list_comment_view, name='delete_list_comment'),
+    path('reviews/toggle-like/', views.toggle_review_like_view, name='toggle_review_like'),
+    path('movie/<str:slug>/', views.movie_detail, name='movie_detail'),
+    path('tv/<str:slug>/', views.tv_detail, name='tv_detail'),
+    path('go/<str:media_type>/<int:tmdb_id>/', views.go_to_content, name='go_to_content'),
+    path('members/recent-art/<int:user_id>/', views.members_recent_art, name='members_recent_art'),
+    path('profile/banner/<int:user_id>/', views.profile_banner, name='profile_banner'),
+    path('api/similar/movies/<int:movie_id>/', views.similar_movies, name='similar_movies'),
+    path('api/similar/tv/<int:tv_id>/', views.similar_tv, name='similar_tv'),
+    path('<str:username>/', views.profile, name='profile'),
+]

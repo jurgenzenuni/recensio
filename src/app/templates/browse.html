@@ -1,0 +1,515 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="browse-container">
+    <!-- Browse Filters -->
+    <div class="browse-filters">
+        <div class="filter-group">
+            <label class="filter-label">BROWSE BY</label>
+            <div class="filter-buttons">
+                <div class="dropdown">
+                    <button class="filter-btn dropdown-toggle" type="button" id="yearDropdown" data-bs-toggle="dropdown"
+                        data-filter="year">
+                        {% if active_filters.year %}{{ active_filters.year }}{% else %}YEAR{% endif %}
+                    </button>
+                    <ul class="dropdown-menu filter-dropdown">
+                        <li><a class="dropdown-item" href="#" data-value="">All Years</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="2025">2025</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="2024">2024</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="2023">2023</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="2022">2022</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="2021">2021</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="2020">2020</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="2019">2019</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="2018">2018</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="2017">2017</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="2016">2016</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="2015">2015</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="2010">2010s</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="2000">2000s</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="1990">1990s</a></li>
+                    </ul>
+                </div>
+                
+                
+                <div class="dropdown">
+                    <button class="filter-btn dropdown-toggle" type="button" id="genreDropdown"
+                        data-bs-toggle="dropdown" data-filter="genre">
+                        {% if active_filters.genre %}{{ active_filters.genre|upper }}{% else %}GENRE{% endif %}
+                    </button>
+                    <ul class="dropdown-menu filter-dropdown">
+                        <li><a class="dropdown-item" href="#" data-value="">All Genres</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="28">Action</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="12">Adventure</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="16">Animation</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="35">Comedy</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="80">Crime</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="99">Documentary</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="18">Drama</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="14">Fantasy</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="27">Horror</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="10749">Romance</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="878">Sci-Fi</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="53">Thriller</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="10752">War</a></li>
+                    </ul>
+                </div>
+                <div class="dropdown">
+                    <button class="filter-btn dropdown-toggle" type="button" id="typeDropdown" data-bs-toggle="dropdown"
+                        data-filter="type">
+                        {% if active_filters.type %}{{ active_filters.type|upper }}{% else %}TYPE{% endif %}
+                    </button>
+                    <ul class="dropdown-menu filter-dropdown">
+                        <li><a class="dropdown-item" href="#" data-value="">All</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="movie">Movies</a></li>
+                        <li><a class="dropdown-item" href="#" data-value="tv">TV Shows</a></li>
+                    </ul>
+                </div>
+                <button class="filter-btn {% if not active_filters %}d-none{% endif %}" id="clearFilters">
+                    ✕ CLEAR
+                </button>
+            </div>
+        </div>
+                <div class="search-group" style="justify-content:flex-end;">
+                        <input type="text" class="search-input" placeholder="FIND A FILM" id="searchInput">
+                        <button class="search-btn" id="searchBtn" aria-label="Search">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 2h12v3a6 6 0 0 1-3 5 6 6 0 0 1 3 5v3H6v-3a6 6 0 0 1 3-5 6 6 0 0 1-3-5V2z"/>
+                            </svg>
+                        </button>
+                </div>
+    </div>
+
+    <!-- Search Results (if search query provided) -->
+    {% if search_query %}
+    <!-- Search Results -->
+    <section class="content-section">
+        <h2 class="section-title">Search Results for "{{ search_query }}"</h2>
+        <div class="section-divider"></div>
+        <div class="content-grid">
+            {% for item in results %}
+            <a href="{{ item.detail_url }}" class="content-card-link">
+                <div class="content-card" data-tmdb-id="{{ item.id }}" data-media-type="{{ item.media_type }}" data-title="{% if item.title %}{{ item.title }}{% else %}{{ item.name }}{% endif %}" data-poster-path="{{ item.poster_path|default:'' }}">
+                    {% if item.poster_url %}
+                    <img src="{{ item.poster_url }}"
+                        alt="{% if item.title %}{{ item.title }}{% else %}{{ item.name }}{% endif %}"
+                        class="content-poster">
+                    {% else %}
+                    <div class="content-poster-placeholder">No Image</div>
+                    {% endif %}
+                    {% if request.session.username %}
+                                        <div class="content-actions">
+                                            <div class="content-actions-bar">
+                                                <button class="content-action-btn{% if item.watched_by_me %} active watched-active{% endif %}" data-action="watch" title="Mark as watched" aria-label="Watched">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                </button>
+                                                <button class="content-action-btn" data-action="list" title="Add to list" aria-label="Add to list">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                                                </button>
+                                                <button class="content-action-btn{% if item.reviewed_by_me %} active review-active{% endif %}" data-action="review" title="Review" aria-label="Review">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                    {% endif %}
+                    {% if item.custom_stats %}
+                    <div class="custom-stats">
+                        <span class="stat watched" data-title="Watched By {{ item.custom_stats.watched_count|default_if_none:0 }}" title="Watched By {{ item.custom_stats.watched_count|default_if_none:0 }}">
+                            <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            {{ item.custom_stats.watched_count|default:'0' }}
+                        </span>
+                        <span class="stat lists" data-title="Appears in {{ item.custom_stats.list_count|default_if_none:0 }} Lists" title="Appears in {{ item.custom_stats.list_count|default_if_none:0 }} Lists">
+                            <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                            {{ item.custom_stats.list_count|default:'0' }}
+                        </span>
+                        {% if item.custom_stats.avg_score > 0 %}
+                        <span class="stat score" data-score="{{ item.custom_stats.avg_score }}" data-title="Average User Score {% if item.custom_stats.avg_score %}{{ item.custom_stats.avg_score|floatformat:1 }}{% else %}—{% endif %}" title="Average User Score {% if item.custom_stats.avg_score %}{{ item.custom_stats.avg_score|floatformat:1 }}{% else %}—{% endif %}">
+                            <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            {{ item.custom_stats.avg_score|floatformat:1 }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </a>
+            {% empty %}
+            <p class="no-content">No results found</p>
+            {% endfor %}
+        </div>
+    </section>
+    {% elif has_filters %}
+    <!-- Filtered Results -->
+    <section class="content-section">
+        <h2 class="section-title">
+            Filtered Results <span class="results-count">({{ total_results }} total)</span>
+        </h2>
+        <div class="section-divider"></div>
+        <div class="content-grid">
+            {% for item in results %}
+            <a href="{{ item.detail_url }}" class="content-card-link">
+                <div class="content-card" data-tmdb-id="{{ item.id }}" data-media-type="{{ item.media_type }}" data-title="{% if item.title %}{{ item.title }}{% else %}{{ item.name }}{% endif %}" data-poster-path="{{ item.poster_path|default:'' }}">
+                    {% if item.poster_url %}
+                    <img src="{{ item.poster_url }}"
+                        alt="{% if item.title %}{{ item.title }}{% else %}{{ item.name }}{% endif %}"
+                        class="content-poster">
+                    {% else %}
+                    <div class="content-poster-placeholder">No Image</div>
+                    {% endif %}
+                    {% if request.session.username %}
+                                        <div class="content-actions">
+                                            <div class="content-actions-bar">
+                                                <button class="content-action-btn{% if item.watched_by_me %} active watched-active{% endif %}" data-action="watch" title="Mark as watched" aria-label="Watched">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                </button>
+                                                <button class="content-action-btn" data-action="list" title="Add to list" aria-label="Add to list">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                                                </button>
+                                                <button class="content-action-btn{% if item.reviewed_by_me %} active review-active{% endif %}" data-action="review" title="Review" aria-label="Review">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                    {% endif %}
+                    {% if item.custom_stats %}
+                    <div class="custom-stats">
+                        <span class="stat watched" data-title="Watched By {{ item.custom_stats.watched_count|default_if_none:0 }}" title="Watched By {{ item.custom_stats.watched_count|default_if_none:0 }}">
+                            <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            {{ item.custom_stats.watched_count|default:'0' }}
+                        </span>
+                        <span class="stat lists" data-title="Appears in {{ item.custom_stats.list_count|default_if_none:0 }} Lists" title="Appears in {{ item.custom_stats.list_count|default_if_none:0 }} Lists">
+                            <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                            {{ item.custom_stats.list_count|default:'0' }}
+                        </span>
+                        {% if item.custom_stats.avg_score > 0 %}
+                        <span class="stat score" data-score="{{ item.custom_stats.avg_score }}" data-title="Average User Score {% if item.custom_stats.avg_score %}{{ item.custom_stats.avg_score|floatformat:1 }}{% else %}—{% endif %}" title="Average User Score {% if item.custom_stats.avg_score %}{{ item.custom_stats.avg_score|floatformat:1 }}{% else %}—{% endif %}">
+                            <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            {{ item.custom_stats.avg_score|floatformat:1 }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </a>
+            {% empty %}
+            <p class="no-content">No results found matching your filters</p>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if total_pages > 1 %}
+        <div class="pagination">
+            {% if current_page > 1 %}
+            <a href="?{% for key, value in active_filters.items %}{{ key }}={{ value }}&{% endfor %}page={{ current_page|add:'-1' }}" class="page-btn">‹ Previous</a>
+            {% endif %}
+            
+            <span class="page-info">Page {{ current_page }} of {{ total_pages }}</span>
+            
+            {% if current_page < total_pages %}
+            <a href="?{% for key, value in active_filters.items %}{{ key }}={{ value }}&{% endfor %}page={{ current_page|add:'1' }}" class="page-btn">Next ›</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </section>
+    {% else %}
+
+    <!-- Trending Section -->
+    <section class="content-section">
+        <div class="section-header">
+            <h2 class="section-title">Trending This Month</h2>
+            <div class="section-divider"></div>
+            <div class="scroll-controls">
+                <button class="scroll-btn scroll-left" data-target="trending-scroll">‹</button>
+                <button class="scroll-btn scroll-right" data-target="trending-scroll">›</button>
+            </div>
+        </div>
+        <div class="content-scroll-container" id="trending-scroll">
+            {% for item in trending %}
+            <a href="{{ item.detail_url }}" class="content-card-link">
+                <div class="content-card" data-tmdb-id="{{ item.id }}" data-media-type="{{ item.media_type }}" data-title="{% if item.title %}{{ item.title }}{% else %}{{ item.name }}{% endif %}" data-poster-path="{{ item.poster_path|default:'' }}">
+                    {% if item.poster_url %}
+                    <img src="{{ item.poster_url }}"
+                        alt="{% if item.title %}{{ item.title }}{% else %}{{ item.name }}{% endif %}"
+                        class="content-poster">
+                    {% else %}
+                    <div class="content-poster-placeholder">No Image</div>
+                    {% endif %}
+                    {% if request.session.username %}
+                                        <div class="content-actions">
+                                            <div class="content-actions-bar">
+                                                <button class="content-action-btn{% if item.watched_by_me %} active watched-active{% endif %}" data-action="watch" title="Mark as watched" aria-label="Watched">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                </button>
+                                                <button class="content-action-btn" data-action="list" title="Add to list" aria-label="Add to list">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                                                </button>
+                                                <button class="content-action-btn{% if item.reviewed_by_me %} active review-active{% endif %}" data-action="review" title="Review" aria-label="Review">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                    {% endif %}
+                    {% if item.custom_stats %}
+                    <div class="custom-stats">
+                        <span class="stat watched" data-title="Watched By {{ item.custom_stats.watched_count|default:'0' }}" title="Watched By {{ item.custom_stats.watched_count|default:'0' }}">
+                            <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            {{ item.custom_stats.watched_count|default:'0' }}
+                        </span>
+                        <span class="stat lists" data-title="Appears in {{ item.custom_stats.list_count|default:'0' }} Lists" title="Appears in {{ item.custom_stats.list_count|default:'0' }} Lists">
+                            <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                            {{ item.custom_stats.list_count|default:'0' }}
+                        </span>
+                        {% if item.custom_stats.avg_score > 0 %}
+                        <span class="stat score" data-score="{{ item.custom_stats.avg_score }}" data-title="Average User Score {{ item.custom_stats.avg_score|floatformat:1 }}" title="Average User Score {{ item.custom_stats.avg_score|floatformat:1 }}">
+                            <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            {{ item.custom_stats.avg_score|floatformat:1 }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </a>
+            {% empty %}
+            <p class="no-content">No trending content available</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Popular Movies Section -->
+    <section class="content-section">
+        <div class="section-header">
+            <h2 class="section-title">Popular Movies This Month</h2>
+            <div class="section-divider"></div>
+            <div class="scroll-controls">
+                <button class="scroll-btn scroll-left" data-target="movies-scroll">‹</button>
+                <button class="scroll-btn scroll-right" data-target="movies-scroll">›</button>
+            </div>
+        </div>
+        <div class="content-scroll-container" id="movies-scroll">
+            {% for movie in popular_movies %}
+            <a href="{{ movie.detail_url }}" class="content-card-link">
+                <div class="content-card" data-tmdb-id="{{ movie.id }}" data-media-type="movie" data-title="{{ movie.title }}" data-poster-path="{{ movie.poster_path|default:'' }}">
+                    {% if movie.poster_url %}
+                    <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="content-poster">
+                    {% else %}
+                    <div class="content-poster-placeholder">No Image</div>
+                    {% endif %}
+                    {% if request.session.username %}
+                                        <div class="content-actions">
+                                            <div class="content-actions-bar">
+                                                <button class="content-action-btn{% if movie.watched_by_me %} active watched-active{% endif %}" data-action="watch" title="Mark as watched" aria-label="Watched">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                </button>
+                                                <button class="content-action-btn" data-action="list" title="Add to list" aria-label="Add to list">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                                                </button>
+                                                <button class="content-action-btn{% if movie.reviewed_by_me %} active review-active{% endif %}" data-action="review" title="Review" aria-label="Review">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                    {% endif %}
+                    {% if movie.custom_stats %}
+                    <div class="custom-stats">
+                        <span class="stat watched" data-title="Watched By {{ movie.custom_stats.watched_count|default:'0' }}" title="Watched By {{ movie.custom_stats.watched_count|default:'0' }}">
+                            <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            {{ movie.custom_stats.watched_count|default:'0' }}
+                        </span>
+                        <span class="stat lists" data-title="Appears in {{ movie.custom_stats.list_count|default:'0' }} Lists" title="Appears in {{ movie.custom_stats.list_count|default:'0' }} Lists">
+                            <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                            {{ movie.custom_stats.list_count|default:'0' }}
+                        </span>
+                        {% if movie.custom_stats.avg_score > 0 %}
+                        <span class="stat score" data-score="{{ movie.custom_stats.avg_score }}" data-title="Average User Score {% if movie.custom_stats.avg_score %}{{ movie.custom_stats.avg_score|floatformat:1 }}{% else %}—{% endif %}" title="Average User Score {% if movie.custom_stats.avg_score %}{{ movie.custom_stats.avg_score|floatformat:1 }}{% else %}—{% endif %}">
+                            <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            {{ movie.custom_stats.avg_score|floatformat:1 }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </a>
+            {% empty %}
+            <p class="no-content">No popular movies available</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Popular TV Shows Section -->
+    <section class="content-section">
+        <div class="section-header">
+            <h2 class="section-title">Popular TV Shows This Month</h2>
+            <div class="section-divider"></div>
+            <div class="scroll-controls">
+                <button class="scroll-btn scroll-left" data-target="tv-scroll">‹</button>
+                <button class="scroll-btn scroll-right" data-target="tv-scroll">›</button>
+            </div>
+        </div>
+        <div class="content-scroll-container" id="tv-scroll">
+            {% for show in popular_tv %}
+            <a href="{{ show.detail_url }}" class="content-card-link">
+                <div class="content-card" data-tmdb-id="{{ show.id }}" data-media-type="tv" data-title="{{ show.name }}" data-poster-path="{{ show.poster_path|default:'' }}">
+                    {% if show.poster_url %}
+                    <img src="{{ show.poster_url }}" alt="{{ show.name }}" class="content-poster">
+                    {% else %}
+                    <div class="content-poster-placeholder">No Image</div>
+                    {% endif %}
+                    {% if request.session.username %}
+                                        <div class="content-actions">
+                                            <div class="content-actions-bar">
+                                                <button class="content-action-btn{% if show.watched_by_me %} active watched-active{% endif %}" data-action="watch" title="Mark as watched" aria-label="Watched">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                </button>
+                                                <button class="content-action-btn" data-action="list" title="Add to list" aria-label="Add to list">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                                                </button>
+                                                <button class="content-action-btn{% if show.reviewed_by_me %} active review-active{% endif %}" data-action="review" title="Review" aria-label="Review">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                    {% endif %}
+                    {% if show.custom_stats %}
+                    <div class="custom-stats">
+                        <span class="stat watched" data-title="Watched By {{ show.custom_stats.watched_count|default:'0' }}" title="Watched By {{ show.custom_stats.watched_count|default:'0' }}">
+                            <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            {{ show.custom_stats.watched_count|default:'0' }}
+                        </span>
+                        <span class="stat lists" data-title="Appears in {{ show.custom_stats.list_count|default:'0' }} Lists" title="Appears in {{ show.custom_stats.list_count|default:'0' }} Lists">
+                            <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                            {{ show.custom_stats.list_count|default:'0' }}
+                        </span>
+                        {% if show.custom_stats.avg_score > 0 %}
+                        <span class="stat score" data-score="{{ show.custom_stats.avg_score }}" data-title="Average User Score {% if show.custom_stats.avg_score %}{{ show.custom_stats.avg_score|floatformat:1 }}{% else %}—{% endif %}" title="Average User Score {% if show.custom_stats.avg_score %}{{ show.custom_stats.avg_score|floatformat:1 }}{% else %}—{% endif %}">
+                            <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            {{ show.custom_stats.avg_score|floatformat:1 }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </a>
+            {% empty %}
+            <p class="no-content">No popular TV shows available</p>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+
+<script>
+    // Filter functionality
+    document.addEventListener('DOMContentLoaded', function () {
+        const urlParams = new URLSearchParams(window.location.search);
+    // Removed dynamic per-type genre menu; static list always visible
+
+    // Universal filter handler - only for filter dropdowns, not navbar
+    document.querySelectorAll('.browse-filters .dropdown-menu .dropdown-item').forEach(item => {
+            item.addEventListener('click', function (e) {
+                e.preventDefault();
+                const value = this.getAttribute('data-value');
+                const dropdown = this.closest('.dropdown');
+                const button = dropdown.querySelector('.filter-btn');
+                const filterType = button.getAttribute('data-filter');
+
+                if (value) {
+                    urlParams.set(filterType, value);
+                } else {
+                    urlParams.delete(filterType);
+                }
+
+                window.location.search = urlParams.toString();
+            });
+        });
+
+        // Clear filters button
+        document.getElementById('clearFilters')?.addEventListener('click', function () {
+            window.location.href = window.location.pathname;
+        });
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+
+        searchBtn.addEventListener('click', function () {
+            const query = searchInput.value.trim();
+            if (query) {
+                urlParams.set('search', query);
+                // Clear other filters when searching
+                urlParams.delete('year');
+                urlParams.delete('rating');
+                urlParams.delete('sort');
+                urlParams.delete('genre');
+                urlParams.delete('type');
+                window.location.search = urlParams.toString();
+            }
+        });
+
+        searchInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                searchBtn.click();
+            }
+        });
+
+        // Set search input value if search param exists
+        const searchParam = urlParams.get('search');
+        if (searchParam) {
+            searchInput.value = searchParam;
+        }
+
+        // Horizontal scroll controls
+        document.querySelectorAll('.scroll-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const targetId = this.getAttribute('data-target');
+                const container = document.getElementById(targetId);
+                const scrollAmount = 300;
+
+                if (this.classList.contains('scroll-left')) {
+                    container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+                } else {
+                    container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Update scroll button visibility
+        function updateScrollButtons(container) {
+            const scrollControls = container.previousElementSibling?.querySelector('.scroll-controls');
+            if (!scrollControls) return;
+
+            const leftBtn = scrollControls.querySelector('.scroll-left');
+            const rightBtn = scrollControls.querySelector('.scroll-right');
+
+            leftBtn.style.opacity = container.scrollLeft > 0 ? '1' : '0.3';
+            rightBtn.style.opacity =
+                container.scrollLeft < container.scrollWidth - container.clientWidth ? '1' : '0.3';
+        }
+
+        document.querySelectorAll('.content-scroll-container').forEach(container => {
+            updateScrollButtons(container);
+            container.addEventListener('scroll', () => updateScrollButtons(container));
+        });
+
+        // Apply gradient colors to score stats
+        function applyScoreColors() {
+            document.querySelectorAll('.stat.score').forEach(stat => {
+                const score = parseFloat(stat.dataset.score);
+                if (!isNaN(score)) {
+                    let color;
+                    if (score < 25) {
+                        color = `hsl(0, 100%, ${40 + (score / 100) * 20}%)`;
+                    } else if (score < 50) {
+                        color = `hsl(${(score - 25) * 1.2}, 100%, 50%)`;
+                    } else if (score < 75) {
+                        color = `hsl(${30 + (score - 50) * 1.2}, 100%, 50%)`;
+                    } else {
+                        color = `hsl(${60 + (score - 75) * 1.2}, 70%, 50%)`;
+                    }
+                    stat.style.color = color;
+                }
+            });
+        }
+
+        applyScoreColors();
+    });
+</script>
+{% endblock %}
