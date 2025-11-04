@@ -21,8 +21,18 @@ TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG') == 'True'
 
-# Hosts are set in .env file
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+# Hosts and CSRF origins
+# Provide comma-separated env vars in production, with safe localhost defaults for dev.
+def _split_env_list(var_name: str, default_value: str = ""):
+    raw = os.getenv(var_name, default_value) or ""
+    return [item.strip() for item in raw.split(',') if item and item.strip()]
+
+# e.g. ALLOWED_HOSTS=your-service.onrender.com,yourdomain.com
+ALLOWED_HOSTS = _split_env_list('ALLOWED_HOSTS', 'localhost,127.0.0.1')
+
+# Django expects full scheme origins here.
+# e.g. CSRF_TRUSTED_ORIGINS=https://your-service.onrender.com,https://yourdomain.com
+CSRF_TRUSTED_ORIGINS = _split_env_list('CSRF_TRUSTED_ORIGINS', 'http://localhost,http://127.0.0.1')
 
 
 # Application definition
