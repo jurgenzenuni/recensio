@@ -27,6 +27,19 @@ def _split_env_list(var_name: str, default_value: str = ""):
     raw = os.getenv(var_name, default_value) or ""
     return [item.strip() for item in raw.split(',') if item and item.strip()]
 
+def _int_env(var_name: str, default_value=None):
+    """Parse integer/float env var safely."""
+    val = os.getenv(var_name)
+    if val is None or val == "":
+        return default_value
+    try:
+        return int(val)
+    except Exception:
+        try:
+            return float(val)
+        except Exception:
+            return default_value
+
 # e.g. ALLOWED_HOSTS=your-service.onrender.com,yourdomain.com
 ALLOWED_HOSTS = _split_env_list('ALLOWED_HOSTS', 'localhost,127.0.0.1')
 
@@ -79,7 +92,7 @@ WSGI_APPLICATION = 'app.wsgi.application'
 DATABASES = {
     'default': dj_database_url.config(
         default=os.getenv('DATABASE_URL'),
-        conn_max_age=os.getenv('CONN_MAX_AGE', default=30),
+        conn_max_age=_int_env('CONN_MAX_AGE', 30),
     )
 }
 
