@@ -79,3 +79,78 @@ CREATE INDEX idx_user_ratings_user_id ON user_ratings(user_id);
 CREATE INDEX idx_user_ratings_content_id ON user_ratings(content_id);
 CREATE INDEX idx_list_items_list_id ON list_items(list_id);
 CREATE INDEX idx_list_items_content_id ON list_items(content_id);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_user_lists_user_name_ci
+ON user_lists (user_id, lower(name));
+
+-- 1) Counters on lists
+ALTER TABLE user_lists
+  ADD COLUMN IF NOT EXISTS likes_count INTEGER DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS comments_count INTEGER DEFAULT 0;
+
+-- 2) Likes
+CREATE TABLE IF NOT EXISTS list_likes (
+  id        SERIAL PRIMARY KEY,
+  list_id   INTEGER NOT NULL REFERENCES user_lists(id) ON DELETE CASCADE,
+  user_id   INTEGER NOT NULL REFERENCES users(id)      ON DELETE CASCADE,
+  liked_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (list_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_list_likes_list_id ON list_likes(list_id);
+CREATE INDEX IF NOT EXISTS idx_list_likes_user_id ON list_likes(user_id);
+
+-- 3) Comments
+CREATE TABLE IF NOT EXISTS list_comments (
+  id           SERIAL PRIMARY KEY,
+  list_id      INTEGER NOT NULL REFERENCES user_lists(id) ON DELETE CASCADE,
+  user_id      INTEGER NOT NULL REFERENCES users(id)      ON DELETE CASCADE,
+  comment_text TEXT NOT NULL,
+  created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_list_comments_list_id ON list_comments(list_id);
+CREATE INDEX IF NOT EXISTS idx_list_comments_user_id ON list_comments(user_id);
+
+-- 4) Backfill counts (safe to run multiple times)
+UPDATE user_lists ul
+SET likes_count = COALESCE((
+  SELECT COUNT(*) FROM list_likes ll WHERE ll.list_id = ul.id
+), 0);
+
+UPDATE user_lists ul
+SET comments_count = COALESCE((
+  SELECT COUNT(*) FROM list_comments lc WHERE lc.list_id = ul.id
+), 0);
+
+-- 1) Add a denormalized counter (fast reads)
+ALTER TABLE user_ratings
+ADD COLUMN likes_count INTEGER NOT NULL DEFAULT 0;
+
+-- 2) Who liked which review (enforces one like per user per review)
+CREATE TABLE user_rating_likes (
+    id SERIAL PRIMARY KEY,
+    rating_id INTEGER NOT NULL REFERENCES user_ratings(id) ON DELETE CASCADE,
+    user_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    liked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (rating_id, user_id)
+);
+
+-- 3) Helpful indexes
+CREATE INDEX idx_user_rating_likes_rating_id ON user_rating_likes(rating_id);
+CREATE INDEX idx_user_rating_likes_user_id  ON user_rating_likes(user_id);
+
+
+CREATE TABLE IF NOT EXISTS user_follows (
+  id SERIAL PRIMARY KEY,
+  follower_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  followee_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT uq_user_follows UNIQUE (follower_id, followee_id),
+  CONSTRAINT chk_no_self_follow CHECK (follower_id <> followee_id)
+);
+
+-- Helpful indexes for queries like “who do I follow?” and “who follows me?”
+CREATE INDEX IF NOT EXISTS idx_user_follows_follower_id ON user_follows(follower_id);
+CREATE INDEX IF NOT EXISTS idx_user_follows_followee_id ON user_follows(followee_id);
