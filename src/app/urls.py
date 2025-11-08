@@ -32,4 +32,5 @@ urlpatterns = [
     path('api/similar/movies/<int:movie_id>/', views.similar_movies, name='similar_movies'),
     path('api/similar/tv/<int:tv_id>/', views.similar_tv, name='similar_tv'),
     path('<str:username>/', views.profile, name='profile'),
+    path('about/', views.about, name='about'),
 ]

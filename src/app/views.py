@@ -400,6 +400,9 @@ def logout(request):
     request.session.flush()
     return redirect('home')
 
+def about(request):
+    return render(request, 'about.html')
+
 def home(request):
     tmdb = TMDBService()
     
